@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu biển số xe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tra cứu biển số xe</h1>
+        <input type="text" id="searchInput" placeholder="Nhập tên tỉnh thành">
+        <button id="searchButton">Tìm kiếm</button>
+        <div id="result"></div>
+    </div>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const resultDiv = document.getElementById('result');
+
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            const province = searchInput.value.trim();
+            if (province) {
+                fetch(`/api/lookup/${encodeURIComponent(province)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Dữ liệu nhận được:', data);
+                        if (data.plateInfo && typeof data.plateInfo === 'object') {
+                            const plateInfoStr = Object.entries(data.plateInfo)
+                                .map(([code, name]) => `${code}: ${name}`)
+                                .join(', ');
+                            resultDiv.textContent = `Biển số xe: ${plateInfoStr}`;
+                        } else {
+                            resultDiv.textContent = data.plateInfo || 'Không tìm thấy thông tin';
+                        }
+                    })
+                    .catch(error => {
+                        resultDiv.textContent = 'Đã xảy ra lỗi khi tìm kiếm.';
+                        console.error('Lỗi:', error);
+                    });
+            } else {
+                resultDiv.textContent = 'Vui lòng nhập tên tỉnh thành.';
+            }
+        }
+    </script>
+</body>
+</html>
